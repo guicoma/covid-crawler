@@ -41,21 +41,6 @@
         }
     }
 
-    function getCursor($conn) {
-        $cursor = 0;
-        $sql = "SELECT current FROM municipi_cursor";
-        $result = $conn->query($sql);
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                echo "<br>Current:".$row["current"]. "<br>";
-                $cursor = $row["current"];
-            }
-        } else {
-            die("Error getting cursor");
-        }
-        return $cursor;
-    }
-
     function getMuncipiData($municipi, $conn) {
         echo "<br>Get Data for municipi: ".$municipi;
         $xml = file_get_contents("https://arcgis.aquas.cat/server/rest/services/Public/Positius___WA1___Taxa_estand_positius_10k_hab_ext/FeatureServer/14/query?f=json&objectIds=".$municipi."&outFields=POB_TOTAL%2Ccovidnegatiu%2Ccovidpositiu%2Ccovidpositiu_c100k_hab%2Ccovidpositiu_s100k_hab%2Cnommunicipi%2COBJECTID&outSR=102100&returnM=true&returnZ=true&spatialRel=esriSpatialRelIntersects&where=1%3D1");
@@ -108,18 +93,6 @@
         }
     }
 
-    // function setOffset($newOffset, $conn) {
-    //     if ($newOffset >= 947) {
-    //         $newOffset = 0;
-    //     }
-    //     $sql = "UPDATE municipi_cursor SET current = '".$newOffset."' WHERE `municipi_cursor`.`max` = 947 LIMIT 1;";
-    //     if ($conn->query($sql) === TRUE) {
-    //         echo "<br> Cursor updated successfully:" . $newOffset;
-    //     } else {
-    //         echo "Error setting cursor: " . $sql . "<br>" . $conn->error;
-    //     }
-    // }
-
     // Create connection
     $conn = new mysqli(DB_SERVERNAME, DB_USERNAME, DB_PASSWORD);
 
@@ -130,14 +103,11 @@
 
     echo "Connected successfully<br>";
 
-    $conn->select_db("covidstats");
+    $conn->select_db(DB_NAME);
 
     initDB($conn);
 
-    // $qMunicipi = getCursor($conn);
-
     $timeout = 6;
-
 
     for ($i=1; $i < 43; $i++) {
         getComarcaData($i, $conn);
@@ -148,14 +118,6 @@
         getMuncipiData($i, $conn);
         sleep($timeout);
     }
-    
-    // setOffset($i, $conn);
 
     $conn->close();
-
-    //Zoom level <= 13 -> comarques (42 comarques)
-    //Zoom level >= 14 -> municipis (947 municipis)
-
-    // $xml2 = file_get_contents("https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json");
-    
 ?>
